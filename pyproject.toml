@@ -10,6 +10,9 @@ readme = "README.md"
 python = ">=3.12"
 aiogram = ">=3.22.0,<4.0.0"
 
+[tool.poetry.scripts]
+telegram-communa-bot = "main:main"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
