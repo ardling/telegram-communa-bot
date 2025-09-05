@@ -20,4 +20,15 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
 dotenv = "^0.9.9"
+black = "^25.1.0"
+isort = "^6.0.1"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
 
