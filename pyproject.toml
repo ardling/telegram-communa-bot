@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "telegram-communa-bot"
+version = "0.1.0"
+description = "Telegram bot for communas"
+authors = [ "ardling <ardling@gmail.com>" ]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+aiogram = ">=3.22.0,<4.0.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+
