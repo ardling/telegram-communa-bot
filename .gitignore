@@ -4,3 +4,5 @@ dist/
 .env*
 poetry.lock
 
+# Log files
+*.log

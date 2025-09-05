@@ -7,13 +7,17 @@ from aiogram.types import Message
 from aiogram.filters import Command
 
 import os
+from .logging_setup import setup_logging
+
+# Initialize logging
+logger = setup_logging()
 
 # Получаем токен из переменной окружения или аргумента командной строки
 def get_token():
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
-        print("Ошибка: Не указан токен Telegram-бота!\n"
-              "Установите переменную окружения TELEGRAM_BOT_TOKEN или передайте токен как аргумент.")
+        logger.error("Ошибка: Не указан токен Telegram-бота!\n"
+                    "Установите переменную окружения TELEGRAM_BOT_TOKEN или передайте токен как аргумент.")
         sys.exit(1)
     return token
 
@@ -33,6 +37,7 @@ async def echo(message: Message):
     return await message.answer(f"Вы сказали: {message.text}")
 
 def main():
+    logger.info("Запуск Telegram Communa Bot...")
     asyncio.run(dp.start_polling(bot))
 
 if __name__ == "__main__":
