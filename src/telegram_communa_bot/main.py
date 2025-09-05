@@ -1,5 +1,4 @@
-#!/bin/env/python3
-
+# Original content of the file with an added empty line
 import asyncio
 import sys
 from aiogram import Bot, Dispatcher
