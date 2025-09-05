@@ -2,4 +2,5 @@ __pycache__/
 dist/
 
 .env*
+poetry.lock
 
