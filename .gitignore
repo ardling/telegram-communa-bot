@@ -1,7 +1,7 @@
 __pycache__/
 dist/
 
-.env*
+.env
 poetry.lock
 
 # Log files
