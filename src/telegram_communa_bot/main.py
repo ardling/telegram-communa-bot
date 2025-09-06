@@ -1,4 +1,5 @@
-# Original content of the file with an added empty line
+#!/bin/env/python3
+
 import asyncio
 import sys
 import uuid
@@ -8,6 +9,7 @@ from aiogram.filters import Command
 from dotenv import load_dotenv
 
 import os
+
 from .logging_setup import setup_logging
 
 logger = setup_logging(__file__)
@@ -70,52 +72,14 @@ async def forward_to_group(message: Message, user_id: int, uid: str):
     """Forward message from private chat to target group with UID marker."""
     try:
         prefix = f"[UID:{uid}]"
-        
-        if message.text:
-            # Text message
-            await bot.send_message(
-                TARGET_GROUP_ID,
-                f"{prefix} {message.text}"
-            )
-        elif message.photo:
-            # Photo message
-            await bot.send_photo(
-                TARGET_GROUP_ID,
-                message.photo[-1].file_id,  # Get highest resolution
-                caption=f"{prefix} {message.caption or ''}"
-            )
-        elif message.video:
-            # Video message
-            await bot.send_video(
-                TARGET_GROUP_ID,
-                message.video.file_id,
-                caption=f"{prefix} {message.caption or ''}"
-            )
-        elif message.animation:
-            # GIF/Animation message
-            await bot.send_animation(
-                TARGET_GROUP_ID,
-                message.animation.file_id,
-                caption=f"{prefix} {message.caption or ''}"
-            )
-        elif message.document:
-            # Document message
-            await bot.send_document(
-                TARGET_GROUP_ID,
-                message.document.file_id,
-                caption=f"{prefix} {message.caption or ''}"
-            )
-        else:
-            # Unsupported message type
-            await message.answer("Извините, этот тип сообщения не поддерживается.")
-            return
+        await forward_message(message, prefix)
             
         logger.info(f"Forwarded message from user {user_id} (UID: {uid}) to group {TARGET_GROUP_ID}")
-        await message.answer("Сообщение отправлено в группу.")
+        _ = await message.answer("Сообщение отправлено в группу.")
         
     except Exception as e:
         logger.error(f"Failed to forward message from user {user_id}: {e}")
-        await message.answer("Произошла ошибка при отправке сообщения.")
+        _ = await message.answer("Произошла ошибка при отправке сообщения.")
 
 async def handle_group_reply(message: Message):
     """Handle replies in the group and forward back to original user."""
@@ -144,7 +108,7 @@ async def handle_group_reply(message: Message):
             return
             
         # Forward reply back to the original user
-        await bot.send_message(
+        _ = await bot.send_message(
             user_id,
             f"Ответ из группы: {message.text or '[медиа-файл]'}"
         )
@@ -159,12 +123,10 @@ async def handle_group_reply(message: Message):
 async def handle_message(message: Message):
     """Main message handler for both private chats and group messages."""
     try:
-        # Handle group messages (replies)
         if message.chat.id == TARGET_GROUP_ID:
             await handle_group_reply(message)
             return
             
-        # Handle private messages (forward to group)
         if message.chat.type == "private":
             # Skip commands
             if message.text and message.text.startswith("/"):
@@ -174,15 +136,54 @@ async def handle_message(message: Message):
             uid = generate_uid(user_id)
             await forward_to_group(message, user_id, uid)
             return
-            
-        # For other groups or channels, do nothing
-        
     except Exception as e:
         logger.error(f"Error in message handler: {e}")
         if message.chat.type == "private":
             _ = await message.answer("Произошла ошибка при обработке сообщения.")
 
+
+async def forward_message(message: Message, prefix: str):
+    if message.text:
+        # Text message
+        _ = await bot.send_message(
+            TARGET_GROUP_ID,
+            f"{prefix} {message.text}"
+        )
+    elif message.photo:
+        # Photo message
+        _ = await bot.send_photo(
+            TARGET_GROUP_ID,
+            message.photo[-1].file_id,  # Get highest resolution
+            caption=f"{prefix} {message.caption or ''}"
+        )
+    elif message.video:
+        # Video message
+        _ = await bot.send_video(
+            TARGET_GROUP_ID,
+            message.video.file_id,
+            caption=f"{prefix} {message.caption or ''}"
+        )
+    elif message.animation:
+        # GIF/Animation message
+        _ = await bot.send_animation(
+            TARGET_GROUP_ID,
+            message.animation.file_id,
+            caption=f"{prefix} {message.caption or ''}"
+        )
+    elif message.document:
+        # Document message
+        _ = await bot.send_document(
+            TARGET_GROUP_ID,
+            message.document.file_id,
+            caption=f"{prefix} {message.caption or ''}"
+        )
+    else:
+        # Unsupported message type
+        _ = await message.answer("Извините, этот тип сообщения не поддерживается.")
+        return
+
+
 def main():
-    logger.info("Запуск Telegram Communa Bot...")
+    logger.info("Start Telegram Communa Bot...")
     asyncio.run(dp.start_polling(bot))
 

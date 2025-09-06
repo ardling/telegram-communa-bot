@@ -7,11 +7,15 @@ These tests simulate the message flow without requiring actual Telegram API call
 
 import pytest
 import os
-import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from src.telegram_communa_bot.main import (
+    forward_to_group, 
+    uid_mapping, 
+    user_uid_mapping, 
+    generate_uid,
+    handle_group_reply,
+)
 
 
 def setup_test_environment():
@@ -24,8 +28,6 @@ def setup_test_environment():
 async def test_private_message_forwarding_flow():
     """Test the complete flow of forwarding a private message to group."""
     setup_test_environment()
-    
-    from telegram_communa_bot.main import forward_to_group, uid_mapping, user_uid_mapping
     
     # Clear mappings for clean test
     uid_mapping.clear()
@@ -65,8 +67,6 @@ async def test_group_reply_forwarding_flow():
     """Test the complete flow of forwarding a group reply back to user."""
     setup_test_environment()
     
-    from telegram_communa_bot.main import handle_group_reply, uid_mapping, user_uid_mapping, generate_uid
-    
     # Clear mappings and setup test UID
     uid_mapping.clear()
     user_uid_mapping.clear()
@@ -102,8 +102,6 @@ async def test_group_reply_forwarding_flow():
 async def test_unsupported_message_type():
     """Test handling of unsupported message types."""
     setup_test_environment()
-    
-    from telegram_communa_bot.main import forward_to_group
     
     # Mock message with unsupported type (no text, photo, video, animation, document)
     mock_message = MagicMock()
