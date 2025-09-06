@@ -9,15 +9,12 @@ from dotenv import load_dotenv
 import os
 from .logging_setup import setup_logging
 
-# Initialize logging
-logger = setup_logging()
+logger = setup_logging(__file__)
 
-# Получаем токен из переменной окружения или аргумента командной строки
 def get_token():
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
-        logger.error("Ошибка: Не указан токен Telegram-бота!\n"
-                    "Установите переменную окружения TELEGRAM_BOT_TOKEN или передайте токен как аргумент.")
+        logger.error("env var TELEGRAM_BOT_TOKEN is not set")
         sys.exit(1)
     return token
 

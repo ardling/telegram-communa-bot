@@ -8,17 +8,19 @@ import logging.config
 from typing import Any
 
 
+DATEFMT = "%Y-%m-%d %H:%M:%S"
+
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "default": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S"
+            "datefmt": DATEFMT
         },
         "detailed": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(funcName)s:%(lineno)d - %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S"
+            "datefmt": DATEFMT
         }
     },
     "handlers": {
@@ -48,8 +50,8 @@ LOGGING_CONFIG = {
 }
 
 
-def setup_logging(config: dict[str, Any] = LOGGING_CONFIG):
+def setup_logging(logger_name: str, config: dict[str, Any] = LOGGING_CONFIG):
     """Initialize logging"""
-    logging.config.dictConfig(LOGGING_CONFIG)
-    return logging.getLogger("telegram_communa_bot")
+    logging.config.dictConfig(config)
+    return logging.getLogger(logger_name)
 
