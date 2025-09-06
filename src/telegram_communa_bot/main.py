@@ -3,12 +3,17 @@
 import asyncio
 import sys
 import uuid
+import json
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
 from dotenv import load_dotenv
+from pathlib import Path
+from typing import Any
+from pydantic import BaseModel
 
 import os
+import os.path
 
 from .logging_setup import setup_logging
 
@@ -17,23 +22,64 @@ logger = setup_logging(__file__)
 uid_mapping: dict[str, int] = {}
 user_uid_mapping: dict[int, str] = {}
 
-def get_token():
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    if not token:
-        logger.error("env var TELEGRAM_BOT_TOKEN is not set")
-        sys.exit(1)
-    return token
+PERSISTENT_FILE_PATH="persistent.json"
 
-def get_target_group_id():
-    group_id = os.getenv("TARGET_GROUP_ID")
-    if not group_id:
-        logger.error("env var TARGET_GROUP_ID is not set")
+
+def get_data_path() -> Path:
+    return Path(get_env_var("BOT_DATA_PATH", "./data"))
+
+
+class Persistent(BaseModel):
+    chat_id: int | None = None
+
+    @staticmethod
+    def load():
+        path: Path = get_data_path().joinpath(PERSISTENT_FILE_PATH)
+
+        logger.info("Load data from path {}", path)
+
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return Persistent.model_validate(data)
+        except FileNotFoundError:
+            data = Persistent()
+            data.save()
+            return data
+
+
+    def save(self) -> None:
+        path: Path = get_data_path().joinpath(PERSISTENT_FILE_PATH)
+
+        logger.info("Save data from path {}", path)
+
+        _ = path.write_text(
+            self.model_dump_json(indent=2),
+            encoding="utf-8"
+        )
+
+
+__persistent: Persistent | None = None
+
+
+def persistent() -> Persistent:
+    global __persistent
+    if not __persistent:
+        __persistent = Persistent.load()
+    return __persistent
+
+
+def get_env_var(name: str, default: str | None=None) -> str:
+    value: str | None = os.getenv(name) or default
+    if not value:
+        logger.error(f"Enivironment vaiable {name} is not set")
         sys.exit(1)
-    try:
-        return int(group_id)
-    except ValueError:
-        logger.error("TARGET_GROUP_ID must be a valid integer")
-        sys.exit(1)
+    return value
+
+
+
+def get_token() -> str:
+    return get_env_var("TELEGRAM_BOT_TOKEN")
+
 
 def generate_uid(user_id: int) -> str:
     """Generate or retrieve UID for a user."""
@@ -53,11 +99,22 @@ def get_user_by_uid(uid: str) -> int | None:
 _ = load_dotenv()
 bot = Bot(get_token())
 dp = Dispatcher()
-TARGET_GROUP_ID = get_target_group_id()
+
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
-    return await message.answer("Привет! Я бот коммуны. Отправьте мне сообщение, и я перешлю его в группу.")
+    chat_id: int = message.chat.id
+    if chat_id < 0:
+        data = persistent()
+        data.chat_id = chat_id
+        data.save()
+
+    return await message.answer(f"""
+        Привет! Я бот коммуны. Отправьте мне сообщение, и я перешлю его в группу.
+
+        ===
+        chat_id: {message.chat.id}
+    """)
 
 @dp.message(Command("help"))
 async def cmd_help(message: Message):
@@ -74,7 +131,7 @@ async def forward_to_group(message: Message, user_id: int, uid: str):
         prefix = f"[UID:{uid}]"
         await forward_message(message, prefix)
             
-        logger.info(f"Forwarded message from user {user_id} (UID: {uid}) to group {TARGET_GROUP_ID}")
+        logger.info(f"Forwarded message from user {user_id} (UID: {uid}) to group {persistent().chat_id}")
         _ = await message.answer("Сообщение отправлено в группу.")
         
     except Exception as e:
@@ -123,7 +180,7 @@ async def handle_group_reply(message: Message):
 async def handle_message(message: Message):
     """Main message handler for both private chats and group messages."""
     try:
-        if message.chat.id == TARGET_GROUP_ID:
+        if message.chat.id == persistent().chat_id:
             await handle_group_reply(message)
             return
             
@@ -146,34 +203,34 @@ async def forward_message(message: Message, prefix: str):
     if message.text:
         # Text message
         _ = await bot.send_message(
-            TARGET_GROUP_ID,
+            persistent().chat_id,
             f"{prefix} {message.text}"
         )
     elif message.photo:
         # Photo message
         _ = await bot.send_photo(
-            TARGET_GROUP_ID,
+            persistent().chat_id,
             message.photo[-1].file_id,  # Get highest resolution
             caption=f"{prefix} {message.caption or ''}"
         )
     elif message.video:
         # Video message
         _ = await bot.send_video(
-            TARGET_GROUP_ID,
+            persistent().chat_id,
             message.video.file_id,
             caption=f"{prefix} {message.caption or ''}"
         )
     elif message.animation:
         # GIF/Animation message
         _ = await bot.send_animation(
-            TARGET_GROUP_ID,
+            persistent().chat_id,
             message.animation.file_id,
             caption=f"{prefix} {message.caption or ''}"
         )
     elif message.document:
         # Document message
         _ = await bot.send_document(
-            TARGET_GROUP_ID,
+            persistent().chat_id,
             message.document.file_id,
             caption=f"{prefix} {message.caption or ''}"
         )

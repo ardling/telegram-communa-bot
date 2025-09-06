@@ -1,19 +1,21 @@
 #!/bin/env/python3
 
-import pytest
 import os
-import sys
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from src.telegram_communa_bot.main import (
+    get_user_by_uid, 
+    generate_uid,
+    get_token,
+    uid_mapping, 
+    user_uid_mapping
+)
 
 def test_uid_generation():
     """Test UID generation and mapping functionality."""
     # Set required environment variables
     os.environ['TELEGRAM_BOT_TOKEN'] = '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
     os.environ['TARGET_GROUP_ID'] = '123456'
-    
-    from telegram_communa_bot.main import generate_uid, get_user_by_uid, uid_mapping, user_uid_mapping
     
     # Clear mappings for clean test
     uid_mapping.clear()
@@ -46,8 +48,6 @@ def test_get_user_by_uid():
     os.environ['TELEGRAM_BOT_TOKEN'] = '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
     os.environ['TARGET_GROUP_ID'] = '123456'
     
-    from telegram_communa_bot.main import generate_uid, get_user_by_uid, uid_mapping, user_uid_mapping
-    
     # Clear mappings for clean test
     uid_mapping.clear()
     user_uid_mapping.clear()
@@ -67,13 +67,7 @@ def test_configuration():
     """Test that configuration functions work correctly."""
     # Test with valid token
     os.environ['TELEGRAM_BOT_TOKEN'] = '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
-    from telegram_communa_bot.main import get_token
     assert get_token() == '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
-    
-    # Test with valid group ID
-    os.environ['TARGET_GROUP_ID'] = '-100123456789'
-    from telegram_communa_bot.main import get_target_group_id
-    assert get_target_group_id() == -100123456789
 
 
 if __name__ == "__main__":
