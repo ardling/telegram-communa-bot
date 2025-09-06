@@ -62,9 +62,12 @@ async def cmd_start(message: Message):
 
 @dp.message(Command("help"))
 async def cmd_help(message: Message):
-    return await message.answer("Я бот для управления коммунами в Telegram.\n"
-                              "Доступные команды: /start /help\n"
-                              "Отправьте мне сообщение в приватном чате - я перешлю его в группу.")
+    return await message.answer("""
+      Доступные команды: 
+      - /start 
+      - /help
+    """)
+  
 
 async def forward_to_group(message: Message, user_id: int, uid: str):
     """Forward message from private chat to target group with UID marker."""
@@ -153,6 +156,7 @@ async def handle_group_reply(message: Message):
         
     except Exception as e:
         logger.error(f"Failed to handle group reply: {e}")
+
 
 @dp.message()
 async def handle_message(message: Message):
