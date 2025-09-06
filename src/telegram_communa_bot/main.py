@@ -2,9 +2,8 @@
 import asyncio
 import sys
 import uuid
-from typing import Dict, Optional
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message, ContentType
+from aiogram.types import Message
 from aiogram.filters import Command
 from dotenv import load_dotenv
 
@@ -13,10 +12,8 @@ from .logging_setup import setup_logging
 
 logger = setup_logging(__file__)
 
-# In-memory UID mapping: UID -> user_id
-uid_mapping: Dict[str, int] = {}
-# Reverse mapping: user_id -> UID for efficient lookup
-user_uid_mapping: Dict[int, str] = {}
+uid_mapping: dict[str, int] = {}
+user_uid_mapping: dict[int, str] = {}
 
 def get_token():
     token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -47,7 +44,7 @@ def generate_uid(user_id: int) -> str:
     logger.info(f"Generated new UID {uid} for user {user_id}")
     return uid
 
-def get_user_by_uid(uid: str) -> Optional[int]:
+def get_user_by_uid(uid: str) -> int | None:
     """Get user_id by UID."""
     return uid_mapping.get(uid)
 
@@ -183,11 +180,9 @@ async def handle_message(message: Message):
     except Exception as e:
         logger.error(f"Error in message handler: {e}")
         if message.chat.type == "private":
-            await message.answer("Произошла ошибка при обработке сообщения.")
+            _ = await message.answer("Произошла ошибка при обработке сообщения.")
 
 def main():
     logger.info("Запуск Telegram Communa Bot...")
     asyncio.run(dp.start_polling(bot))
 
-if __name__ == "__main__":
-    main()

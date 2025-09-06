@@ -1,5 +1,7 @@
 __pycache__/
 dist/
+data/
+data/README.md
 
 .env
 poetry.lock
