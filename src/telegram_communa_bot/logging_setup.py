@@ -16,37 +16,30 @@ LOGGING_CONFIG = {
     "formatters": {
         "default": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            "datefmt": DATEFMT
+            "datefmt": DATEFMT,
         },
         "detailed": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(funcName)s:%(lineno)d - %(message)s",
-            "datefmt": DATEFMT
-        }
+            "datefmt": DATEFMT,
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "level": "INFO",
             "formatter": "default",
-            "stream": "ext://sys.stdout"
+            "stream": "ext://sys.stdout",
         }
     },
     "loggers": {
         "telegram_communa_bot": {
             "level": "DEBUG",
             "handlers": ["console"],
-            "propagate": False
+            "propagate": False,
         },
-        "aiogram": {
-            "level": "INFO",
-            "handlers": ["console"],
-            "propagate": False
-        }
+        "aiogram": {"level": "INFO", "handlers": ["console"], "propagate": False},
     },
-    "root": {
-        "level": "WARNING",
-        "handlers": ["console"]
-    }
+    "root": {"level": "WARNING", "handlers": ["console"]},
 }
 
 
@@ -54,4 +47,3 @@ def setup_logging(logger_name: str, config: dict[str, Any] = LOGGING_CONFIG):
     """Initialize logging"""
     logging.config.dictConfig(config)
     return logging.getLogger(logger_name)
-
