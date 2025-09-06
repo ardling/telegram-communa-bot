@@ -4,6 +4,7 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
+from dotenv import load_dotenv
 
 import os
 from .logging_setup import setup_logging
@@ -20,6 +21,7 @@ def get_token():
         sys.exit(1)
     return token
 
+_ = load_dotenv()
 bot = Bot(get_token())
 dp = Dispatcher()
 
