@@ -2,10 +2,10 @@
 
 import asyncio
 import sys
-import uuid
 import json
+import re
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message
+from aiogram.types import Message, User
 from aiogram.filters import Command
 from dotenv import load_dotenv
 from pathlib import Path
@@ -22,6 +22,7 @@ uid_mapping: dict[str, int] = {}
 user_uid_mapping: dict[int, str] = {}
 
 PERSISTENT_FILE_PATH = "persistent.json"
+PREFIX_PATTERN = re.compile(r"^\[(\d+)\s@")
 
 
 def get_data_path() -> Path:
@@ -75,18 +76,6 @@ def get_token() -> str:
     return get_env_var("TELEGRAM_BOT_TOKEN")
 
 
-def generate_uid(user_id: int) -> str:
-    """Generate or retrieve UID for a user."""
-    if user_id in user_uid_mapping:
-        return user_uid_mapping[user_id]
-
-    uid = str(uuid.uuid4())[:8].upper()
-    uid_mapping[uid] = user_id
-    user_uid_mapping[user_id] = uid
-    logger.info(f"Generated new UID {uid} for user {user_id}")
-    return uid
-
-
 def get_user_by_uid(uid: str) -> int | None:
     """Get user_id by UID."""
     return uid_mapping.get(uid)
@@ -127,14 +116,15 @@ async def cmd_help(message: Message):
     )
 
 
-async def forward_to_group(message: Message, user_id: int, uid: str):
-    """Forward message from private chat to target group with UID marker."""
+async def forward_to_group(message: Message, user_id: int) -> None:
+    """Forward message from private chat to target group."""
+    user: User = message.from_user
     try:
-        prefix = f"[UID:{uid}]"
+        prefix = f"[{user.id} @{user.username}, {user.first_name} {user.last_name}]"
         await forward_message(message, prefix)
 
         logger.info(
-            f"Forwarded message from user {user_id} (UID: {uid}) to group {persistent().chat_id}"
+            f"Forwarded message from user {user_id} to group {persistent().chat_id}"
         )
         _ = await message.answer("Сообщение отправлено в группу.")
 
@@ -156,28 +146,18 @@ async def handle_group_reply(message: Message):
     original_text = (
         message.reply_to_message.text or message.reply_to_message.caption or ""
     )
-    if not original_text.startswith("[UID:"):
-        return
+
+    match = PREFIX_PATTERN.match(original_text)
+    if not match:
+        logger.warning(f"Unknown UID in reply: {original_text}")
+
+    user_id: int = match.group(1)
 
     try:
-        uid_end = original_text.find("]")
-        if uid_end == -1:
-            return
-
-        uid = original_text[5:uid_end]  # Extract UID between [UID: and ]
-        user_id = get_user_by_uid(uid)
-
-        if not user_id:
-            logger.warning(f"Unknown UID in reply: {uid}")
-            return
-
-        # Forward reply back to the original user
         _ = await bot.send_message(
             user_id, f"Ответ из группы: {message.text or '[медиа-файл]'}"
         )
-
-        logger.info(f"Forwarded reply from group to user {user_id} (UID: {uid})")
-
+        logger.info(f"Forwarded reply from group to user {user_id})")
     except Exception as e:
         logger.error(f"Failed to handle group reply: {e}")
 
@@ -196,8 +176,7 @@ async def handle_message(message: Message):
                 return
 
             user_id = message.from_user.id
-            uid = generate_uid(user_id)
-            await forward_to_group(message, user_id, uid)
+            await forward_to_group(message, user_id)
             return
     except Exception as e:
         logger.error(f"Error in message handler: {e}")
