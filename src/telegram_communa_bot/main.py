@@ -28,7 +28,11 @@ async def cmd_start(message: Message):
 
 @dp.message(Command("help"))
 async def cmd_help(message: Message):
-    return await message.answer("Я бот для управления коммунами в Telegram. Доступные команды: /start /help")
+    return await message.answer("""
+      Доступные команды: 
+      - /start 
+      - /help
+    """)
 
 @dp.message()
 async def echo(message: Message):
