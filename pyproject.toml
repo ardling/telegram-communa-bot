@@ -9,9 +9,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.12"
 aiogram = ">=3.22.0,<4.0.0"
+dotenv = "^0.9.9"
 
 [tool.poetry.scripts]
-telegram-communa-bot = "main:main"
+telegram-communa-bot = "telegram_communa_bot.main:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
