@@ -9,7 +9,6 @@ from aiogram.types import Message, User
 from aiogram.filters import Command
 from dotenv import load_dotenv
 from pathlib import Path
-from typing import Any
 from pydantic import BaseModel
 
 import os
@@ -120,7 +119,11 @@ async def forward_to_group(message: Message, user_id: int) -> None:
     """Forward message from private chat to target group."""
     user: User = message.from_user
     try:
-        prefix = f"[{user.id} @{user.username}, {user.first_name} {user.last_name}]"
+        prefix = f"""[{user.id} @{' '.join([
+            (user.username or ''),
+            (user.first_name or ''),
+            (user.last_name or '')
+        ]).strip()}]: """
         await forward_message(message, prefix)
 
         logger.info(
@@ -142,7 +145,8 @@ async def handle_group_reply(message: Message):
     if message.reply_to_message.from_user.id != bot.id:
         return
 
-    # Extract UID from the original message
+    user: User = message.from_user
+
     original_text = (
         message.reply_to_message.text or message.reply_to_message.caption or ""
     )
@@ -155,7 +159,11 @@ async def handle_group_reply(message: Message):
 
     try:
         _ = await bot.send_message(
-            user_id, f"Ответ из группы: {message.text or '[медиа-файл]'}"
+            user_id,
+            f"Ответ из группы: [@{user.username} {' '.join([
+                user.first_name or '',
+                user.last_name or '',
+            ]).strip()}]: {message.text or '[медиа-файл]'}",
         )
         logger.info(f"Forwarded reply from group to user {user_id})")
     except Exception as e:
