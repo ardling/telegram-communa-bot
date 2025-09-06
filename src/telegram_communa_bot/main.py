@@ -30,7 +30,7 @@ def get_data_path() -> Path:
 
 
 class Persistent(BaseModel):
-    chat_id: int | None = None
+    chat_id: int = 0
 
     @staticmethod
     def load():
@@ -105,12 +105,13 @@ dp = Dispatcher()
 async def cmd_start(message: Message):
     chat_id: int = message.chat.id
     if chat_id < 0:
+        logger.info("/start in with chat_id: {}", chat_id)
         data = persistent()
         data.chat_id = chat_id
         data.save()
 
     return await message.answer(f"""
-        Привет! Я бот коммуны. Отправьте мне сообщение, и я перешлю его в группу.
+        Привет! Я бот коммуны. Я буду пересылвать сообщения в этот чат.
 
         ===
         chat_id: {message.chat.id}
