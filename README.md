@@ -36,3 +36,6 @@ Run tests:
 ```bash
 pytest tests/
 ```
+
+Add `.env.dev`
+
