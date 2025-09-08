@@ -33,7 +33,7 @@ async def register_user(message: Message):
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     chat: Chat = message.chat
-    logger.info("/start in with chat_id: {}", item_str(chat))
+    logger.info("/start in with chat_id: %s", item_str(chat))
 
     # chat ID is lower then 0
     if chat.id < 0:

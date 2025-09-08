@@ -23,7 +23,7 @@ class IsUpdateChat(Enum):
 
 
 async def register_lobby_chat(message: Message):
-    logger.info("New main chat {}", item_str(message.chat))
+    logger.info("New main chat %s", item_str(message.chat))
 
     data = app_data()
     if data.chat_id == message.chat.id:

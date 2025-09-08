@@ -39,7 +39,7 @@ LOGGING_CONFIG = {
         },
         "aiogram": {"level": "INFO", "handlers": ["console"], "propagate": False},
     },
-    "root": {"level": "WARNING", "handlers": ["console"]},
+    "root": {"level": "INFO", "handlers": ["console"]},
 }
 
 
