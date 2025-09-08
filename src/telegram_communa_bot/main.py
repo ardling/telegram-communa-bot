@@ -12,7 +12,7 @@ from aiogram.filters import Command
 from telegram_communa_bot.persistent import app_data
 
 from .logging_setup import setup_logging
-from .bot import bot, dp
+from .bot import bot, dp, item_str
 from .lobby_chat import register_lobby_chat
 
 logger = setup_logging(__file__)
@@ -33,7 +33,7 @@ async def register_user(message: Message):
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     chat: Chat = message.chat
-    logger.info("/start in with chat_id: {}", chat.id)
+    logger.info("/start in with chat_id: {}", item_str(chat))
 
     # chat ID is lower then 0
     if chat.id < 0:
