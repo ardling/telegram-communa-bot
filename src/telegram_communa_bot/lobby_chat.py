@@ -81,5 +81,5 @@ async def update_chat_no(callback: CallbackQuery):
     _ = await callback.message.edit_reply_markup(reply_markup=None)
     _ = await bot.send_message(
         data.chat_id,
-        f"""Переносс лобби в что {data.chat_id} отклонен пользователем {item_str(user)}.""",
+        f"""Переносс лобби в чат {data.chat_id} отклонен пользователем {item_str(user)}.""",
     )
