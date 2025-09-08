@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import override
 from pydantic import BaseModel
 
 from .logging_setup import setup_logging
@@ -8,40 +9,72 @@ from .settings import get_data_path
 logger = setup_logging(__file__)
 
 PERSISTENT_FILE_PATH = "persistent.json"
+USERS_LIST_FILE_PATH = "users_lists.json"
 
 
 class Persistent(BaseModel):
-    chat_id: int = 0
-    new_chat_id: int | None = None
+    @classmethod
+    def _file_name(cls) -> str:
+        raise NotImplemented
 
-    @staticmethod
-    def load():
-        path: Path = get_data_path().joinpath(PERSISTENT_FILE_PATH)
+    @classmethod
+    def file_path(cls) -> Path:
+        return get_data_path().joinpath(cls._file_name())
 
-        logger.info("Load data from path {}", path)
+    @classmethod
+    def load(cls):
+        path: Path = cls.file_path()
 
+        logger.info("Load data from path %s", path)
         try:
-            return Persistent.model_validate(
-                json.loads(path.read_text(encoding="utf-8"))
-            )
+            return cls.model_validate(json.loads(path.read_text(encoding="utf-8")))
         except FileNotFoundError:
-            data = Persistent()
+            data = cls()
             data.save()
             return data
 
     def save(self) -> None:
-        path: Path = get_data_path().joinpath(PERSISTENT_FILE_PATH)
-
-        logger.info("Save data from path {}", path)
+        path: Path = self.file_path()
+        logger.info("Save <%s> to %s", type(self), path)
 
         _ = path.write_text(self.model_dump_json(indent=2), encoding="utf-8")
 
 
-__persistent: Persistent | None = None
+class AppData(Persistent):
+    chat_id: int = 0
+    new_chat_id: int | None = None
+
+    @override
+    @classmethod
+    def _file_name(cls) -> str:
+        return PERSISTENT_FILE_PATH
 
 
-def app_data() -> Persistent:
+__persistent: AppData | None = None
+
+
+def app_data() -> AppData:
     global __persistent
     if not __persistent:
-        __persistent = Persistent.load()
+        __persistent = AppData.load()
     return __persistent
+
+
+class UsersLists(Persistent):
+    white_list: set[str] = set()
+    black_list: set[str] = set()
+
+    @override
+    @classmethod
+    def _file_name(cls) -> str:
+        return USERS_LIST_FILE_PATH
+
+
+__user_lists: UsersLists | None = None
+
+
+def users_lists() -> UsersLists:
+    global __user_lists
+    if not __user_lists:
+        __user_lists = UsersLists.load()
+    return __user_lists
