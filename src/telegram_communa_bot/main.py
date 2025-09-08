@@ -4,8 +4,16 @@ import asyncio
 import sys
 import json
 import re
-from aiogram import Bot, Dispatcher
-from aiogram.types import Message, User
+from enum import Enum
+from aiogram import Bot, Dispatcher, Router, F
+from aiogram.types import (
+    Message,
+    User,
+    Chat,
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 from aiogram.filters import Command
 from dotenv import load_dotenv
 from pathlib import Path
@@ -28,8 +36,20 @@ def get_data_path() -> Path:
     return Path(get_env_var("BOT_DATA_PATH", "./data"))
 
 
+def item_str(item: User | Chat | None):
+    """Print item readable info"""
+
+    if isinstance(item, User):
+        return f"<User: {item.id}, {item.username}, {item.full_name}>"
+    if isinstance(item, Chat):
+        return f"<Chat: {item.id}, {item.type}, {item.title}>"
+    else:
+        return f"<Unnown type: {type(item)}>"
+
+
 class Persistent(BaseModel):
     chat_id: int = 0
+    new_chat_id: int | None = None
 
     @staticmethod
     def load():
@@ -84,25 +104,71 @@ def get_user_by_uid(uid: str) -> int | None:
 _ = load_dotenv()
 bot: Bot = Bot(get_token())
 dp: Dispatcher = Dispatcher()
+router = Router()
+_ = dp.include_router(router)
+
+
+class IsUpdateChat(Enum):
+    yes = "is_update_chat_yes"
+    no = "is_update_chat_no"
+
+
+async def register_main_chat(message: Message):
+    logger.info("New main chat {}", item_str(message.chat))
+
+    data = persistent()
+    if data.chat_id == message.chat.id:
+        return await message.answer("Этот чат уже зарегистрирован")
+
+    data = persistent()
+    data.new_chat_id = message.chat.id
+
+    ikb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Нет", callback_data=IsUpdateChat.no.value)],
+            [InlineKeyboardButton(text="Да", callback_data=IsUpdateChat.yes.value)],
+        ]
+    )
+    _ = await bot.send_message(
+        data.chat_id,
+        f"""Подтвердите изменения лобби чата, новый чат: {item_str(message.chat)}""",
+        reply_markup=ikb,
+    )
+
+
+@router.callback_query(F.data == IsUpdateChat.yes.value)
+async def handle_callback_name(callback: CallbackQuery):
+    data = persistent()
+
+    logger.info(f"Update chat_id from {data.chat_id} to {data.new_chat_id}")
+
+    if data.new_chat_id:
+        data.chat_id = data.new_chat_id
+        data.new_chat_id = None
+        data.save()
+
+        return await callback.answer(f"Лобби чат теперь {data.chat_id}")
+
+    return await callback.answer(f"Лобби чат не обновлен")
+
+
+async def register_user(message: Message):
+    return await message.answer(
+        f"""
+        Привет, ты добавлен в лист ожидания"""
+    )
 
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
-    chat_id: int = message.chat.id
-    if chat_id < 0:
-        logger.info("/start in with chat_id: {}", chat_id)
-        data = persistent()
-        data.chat_id = chat_id
-        data.save()
+    chat: Chat = message.chat
+    logger.info("/start in with chat_id: {}", chat.id)
 
-    return await message.answer(
-        f"""
-        Привет! Я бот коммуны. Я буду пересылвать сообщения в этот чат.
-
-        ===
-        chat_id: {message.chat.id}
-    """
-    )
+    # chat ID is lower then 0
+    if chat.id < 0:
+        _ = await register_main_chat(message)
+    else:
+        _ = await register_user(message)
 
 
 @dp.message(Command("help"))
