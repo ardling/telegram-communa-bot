@@ -23,11 +23,6 @@ user_uid_mapping: dict[int, str] = {}
 PREFIX_PATTERN = re.compile(r"^\[(\d+)\s@")
 
 
-def get_user_by_uid(uid: str) -> int | None:
-    """Get user_id by UID."""
-    return uid_mapping.get(uid)
-
-
 async def register_user(message: Message):
     return await message.answer(
         f"""
