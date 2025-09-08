@@ -2,6 +2,7 @@ from enum import Enum
 
 from aiogram import F
 from aiogram.types import (
+    User,
     Message,
     CallbackQuery,
     InlineKeyboardMarkup,
@@ -45,19 +46,40 @@ async def register_lobby_chat(message: Message):
 
 
 @router.callback_query(F.data == IsUpdateChat.yes.value)
-async def handle_callback_name(callback: CallbackQuery):
+async def update_chat_yes(callback: CallbackQuery):
     data = app_data()
 
     logger.info(f"Update chat_id from {data.chat_id} to {data.new_chat_id}")
 
-    if data.new_chat_id:
-        data.chat_id = data.new_chat_id
-        data.new_chat_id = None
-        data.save()
+    _ = await callback.message.edit_reply_markup(reply_markup=None)
 
-        _ = await callback.answer(f"Лобби чат теперь {data.chat_id}")
-        _ = await bot.send_message(
-            data.chat_id, f"Чат зарегистрирован в качестве лобби"
-        )
+    if not data.new_chat_id:
+        return await callback.answer(f"Лобби чат не обновлен")
 
-    return await callback.answer(f"Лобби чат не обновлен")
+    old_chat = data.chat_id
+    data.chat_id = data.new_chat_id
+    data.new_chat_id = None
+    data.save()
+
+    _ = await bot.send_message(
+        old_chat,
+        f"""
+        Пользователь {item_str(callback.from_user)} подтвердил, что лобби теперь {data.chat_id}.""",
+    )
+    _ = await bot.send_message(data.chat_id, f"Чат зарегистрирован в качестве лобби")
+
+
+@router.callback_query(F.data == IsUpdateChat.no.value)
+async def update_chat_no(callback: CallbackQuery):
+    data = app_data()
+    user: User = callback.from_user
+
+    logger.info(
+        f"Rejected update chat_id from {data.chat_id} to {data.new_chat_id} by user {item_str(user)}"
+    )
+
+    _ = await callback.message.edit_reply_markup(reply_markup=None)
+    _ = await bot.send_message(
+        data.chat_id,
+        f"""Переносс лобби в что {data.chat_id} отклонен пользователем {item_str(user)}.""",
+    )

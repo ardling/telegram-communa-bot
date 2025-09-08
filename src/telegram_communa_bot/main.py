@@ -70,7 +70,7 @@ async def forward_to_group(message: Message) -> None:
         logger.info(
             f"Forwarded message from user {user.id} to group {app_data().chat_id}"
         )
-        _ = await message.answer("Сообщение отправлено в группу.")
+        _ = await message.answer("Сообщение отправлено в чат.")
 
     except Exception as e:
         logger.error(f"Failed to forward message from user {user.id}: {e}")
