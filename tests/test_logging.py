@@ -1,9 +1,5 @@
 #!/bin/env/python3
 
-import logging
-import tempfile
-import os
-from unittest.mock import patch
 from telegram_communa_bot.logging_setup import setup_logging
 
 
