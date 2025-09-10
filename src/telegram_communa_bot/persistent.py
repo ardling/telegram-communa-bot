@@ -35,7 +35,7 @@ class Persistent(BaseModel):
 
     def save(self) -> None:
         path: Path = self.file_path()
-        logger.info("Save <%s> to %s", type(self), path)
+        logger.info("Save %s to %s", type(self), path)
 
         _ = path.write_text(self.model_dump_json(indent=2), encoding="utf-8")
 
@@ -61,8 +61,9 @@ def app_data() -> AppData:
 
 
 class UsersLists(Persistent):
-    white_list: set[str] = set()
-    black_list: set[str] = set()
+    white_list: set[int] = set()
+    black_list: set[int] = set()
+    wait_list: set[int] = set()
 
     @override
     @classmethod

@@ -1,11 +1,9 @@
-from pathlib import Path
-
-import os
-
 from .logging_setup import setup_logging
 
-
 logger = setup_logging(__file__)
+
+from pathlib import Path
+import os
 
 
 def get_env_var(name: str, default: str | None = None) -> str:

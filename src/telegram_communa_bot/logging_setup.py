@@ -26,7 +26,7 @@ LOGGING_CONFIG = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "INFO",
+            "level": "DEBUG",
             "formatter": "default",
             "stream": "ext://sys.stdout",
         }
@@ -37,9 +37,19 @@ LOGGING_CONFIG = {
             "handlers": ["console"],
             "propagate": False,
         },
-        "aiogram": {"level": "INFO", "handlers": ["console"], "propagate": False},
+        "aiogram": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+        "aiogram.event": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagete": False,
+        },
+        "aiogram.dispatcher.dispatcher": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
+    "root": {"level": "DEBUG", "handlers": ["console"]},
 }
 
 
