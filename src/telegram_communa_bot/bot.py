@@ -34,7 +34,6 @@ async def run_bot():
     dp: Dispatcher = Dispatcher()
 
     logger.info("AppData: %s", app_data())
-    router_lobby.message.filter(F.chat.id == app_data().chat_id)
 
     _ = dp.include_router(router_lobby)
     _ = dp.include_router(router_private)

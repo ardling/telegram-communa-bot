@@ -4,10 +4,13 @@ logger = setup_logging(__file__)
 
 import asyncio
 import re
-from collections.abc import Iterable, Awaitable, Callable
+from typing import override
+from collections.abc import Iterable  # , Awaitable, Callable
 
-from aiogram import Bot, Router, F
-from aiogram.dispatcher.event.handler import CallbackType
+from aiogram import Router, F
+from aiogram.filters import BaseFilter
+
+# from aiogram.dispatcher.event.handler import CallbackType
 from aiogram.types import (
     User,
     Message,
@@ -18,12 +21,29 @@ from aiogram.types import (
 from aiogram.filters import Command
 
 from .common import GlobalBot, item_str, user_from_id, lobby_send_message
-from .persistent import app_data, users_lists
+from .persistent import AppData, app_data, users_lists
 
 PREFIX_PATTERN = re.compile(r"^\[(\d+)\s@")
 
 
+class LobbyFilter(BaseFilter):
+    def __init__(self):
+        self._ad: AppData = app_data()
+
+    @override
+    async def __call__(self, message: Message) -> bool:
+        logger.info(
+            "message.chat.id=%s, app_data.chat_id=%s",
+            message.chat.id,
+            self._ad.chat_id,
+        )
+        return message.chat.id == self._ad.chat_id
+
+
 router_lobby = Router(name="lobby")
+
+_lobby_filter = LobbyFilter()
+_ = router_lobby.message.filter(_lobby_filter)
 
 router_questsions = Router(name="questons")
 _ = router_lobby.include_router(router_questsions)
