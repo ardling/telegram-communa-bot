@@ -2,7 +2,7 @@ from .logging_setup import setup_logging
 
 logger = setup_logging(__file__)
 
-from aiogram import Dispatcher, Router, F
+from aiogram import Dispatcher, Router
 from aiogram.types import Message
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
