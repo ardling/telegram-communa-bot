@@ -1,6 +1,11 @@
-from aiogram import Bot
-from aiogram.types import ReplyMarkupUnion, User, Chat, Message
-from .persistent import app_data
+from ..logging_setup import setup_logging
+
+logger = setup_logging(__file__)
+
+from aiogram.types import User, Chat, Message
+from aiogram.types import ReplyMarkupUnion
+
+from .globals import GlobalBot
 
 
 def item_str(item: User | Chat | Message | None):
@@ -31,26 +36,7 @@ async def user_from_id(id: int) -> User | None:
         return None
 
 
-_global_bot: Bot | None = None
-
-
-class GlobalBot(Bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        global _global_bot
-        _global_bot = self
-
-    @staticmethod
-    def get() -> Bot:
-        if not _global_bot:
-            raise SystemExit(1)
-
-        return _global_bot
-
-
 async def lobby_send_message(text: str, reply_markup: ReplyMarkupUnion | None = None):
-    if not _global_bot:
-        return SystemExit(1)
-    return await _global_bot.send_message(
+    return await GlobalBot.get().send_message(
         app_data().chat_id, text, reply_markup=reply_markup
     )

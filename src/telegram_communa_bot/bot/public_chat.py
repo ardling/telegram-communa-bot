@@ -3,6 +3,10 @@ All public chats not registered as lobby considering as
 potential new lobby chats.
 """
 
+from ..logging_setup import setup_logging
+
+logger = setup_logging(__file__)
+
 from enum import Enum
 from aiogram import F, Router
 from aiogram.enums import ChatType
@@ -16,12 +20,9 @@ from aiogram.types import (
 from aiogram.filters import Command
 
 
-from .logging_setup import setup_logging
+from .app_data import app_data
 from .common import lobby_send_message, item_str
-from .persistent import app_data
 from .lobby_chat import router_lobby
-
-logger = setup_logging(__file__)
 
 
 router_public_chat = Router(name="public_chat")
@@ -54,6 +55,8 @@ async def cmd_start(message: Message):
 
 @router_lobby.callback_query(F.data == IsUpdateChat.yes.value)
 async def update_chat_yes(callback: CallbackQuery):
+    assert isinstance(callback.message, Message)
+
     data = app_data()
 
     logger.info(f"Update chat_id from {data.chat_id} to {data.new_chat_id}")
@@ -78,6 +81,8 @@ async def update_chat_yes(callback: CallbackQuery):
 
 @router_lobby.callback_query(F.data == IsUpdateChat.no.value)
 async def update_chat_no(callback: CallbackQuery):
+    assert isinstance(callback.message, Message)
+
     data = app_data()
     user: User = callback.from_user
 
