@@ -38,10 +38,12 @@ class GlobalData:
 
     @staticmethod
     async def init(settings: Settings):
-        admin_id = await username_to_id(settings.admin)
-        if not admin_id:
-            logger.error(f"Incorrect admin: {settings.admin}")
-            raise SystemExit(1)
+        try:
+            admin_id = int(settings.admin)
+        except ValueError:
+            admin_id = await username_to_id(settings.admin) or 0
+            if not admin_id:
+                logger.error(f"Incorrect admin: {settings.admin}")
 
         global _global_data
         _global_data = GlobalData(admin_id=admin_id)
@@ -51,18 +53,17 @@ _global_data: GlobalData
 
 
 async def username_to_id(username: str) -> int | None:
-
     if not username.startswith("@"):
         username = "@" + username
 
     logger.info("admin username: %s", username)
     try:
-        chat = await GlobalBot.get().get_chat(username)
+        chat = await GlobalBot.get().get_chat(chat_id=username)
         return chat.id
     except TelegramForbiddenError:
         # бот заблокирован или нет доступа
         return None
     except TelegramBadRequest as e:
         # например: chat not found
-        logger.error("Can't convert username to id: %s", e)
+        logger.error("Can't convert username to id: %s", e, stack_info=True)
         return None

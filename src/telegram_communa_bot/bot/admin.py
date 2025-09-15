@@ -7,17 +7,19 @@ from aiogram import Router
 from aiogram.filters import BaseFilter, Command
 from aiogram.types import Message
 
-from ..settings import settings
+from telegram_communa_bot.bot.app_data import app_data, AppData
 
 
 class _AdminFilter(BaseFilter):
+    def __init__(self):
+        self._ad: AppData = app_data()
+
     @override
     async def __call__(self, message: Message) -> bool:
-        chat_id = settings().chat_id
         logger.info(
             "message.chat.id=%s, app_data.admin_id=%s",
             message.chat.id,
-            GlobalBot.admin_id,
+            self._ad.admin_id,
         )
         return message.chat.id == self._ad.admin_id
 
