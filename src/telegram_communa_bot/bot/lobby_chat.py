@@ -1,4 +1,4 @@
-from .logging_setup import setup_logging
+from ..logging_setup import setup_logging
 
 logger = setup_logging(__file__)
 
@@ -20,24 +20,30 @@ from aiogram.types import (
 )
 from aiogram.filters import Command
 
-from .common import GlobalBot, item_str, user_from_id, lobby_send_message
-from .persistent import AppData, app_data, users_lists
+from .globals import GlobalBot
+
+from .common import (
+    item_str,
+    user_from_id,
+    lobby_send_message,
+)
+
+from .app_data import app_data, users_lists
+
 
 PREFIX_PATTERN = re.compile(r"^\[(\d+)\s@")
 
 
 class LobbyFilter(BaseFilter):
-    def __init__(self):
-        self._ad: AppData = app_data()
-
     @override
     async def __call__(self, message: Message) -> bool:
+        ad = app_data()
         logger.info(
             "message.chat.id=%s, app_data.chat_id=%s",
             message.chat.id,
-            self._ad.chat_id,
+            ad.chat_id,
         )
-        return message.chat.id == self._ad.chat_id
+        return message.chat.id == ad.chat_id
 
 
 router_lobby = Router(name="lobby")
@@ -49,9 +55,12 @@ router_questsions = Router(name="questons")
 _ = router_lobby.include_router(router_questsions)
 
 
-@router_lobby.message(F.reply_to_message != None)
+@router_lobby.message(F.reply_to_message, F.reply_to_message.forward_from)
 async def reply(message: Message):
     """Handle replies in the group and forward back to original user."""
+    assert message.reply_to_message
+    assert message.reply_to_message.forward_from
+
     user_id = message.reply_to_message.forward_from.id
 
     if not user_id:
@@ -264,6 +273,11 @@ async def ask_allow_user(user: User):
 @router_questsions.callback_query(F.data.startswith(f"{ASK_ALLOW}:"))
 async def handle_answer(query: CallbackQuery):
     _ = await query.answer()
+
+    assert query.data
+    assert query.message
+    assert isinstance(query.message, Message)
+
     _, user_id, choice = query.data.split(":", 2)
     user_id = int(user_id)
 

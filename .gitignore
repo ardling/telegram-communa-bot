@@ -3,7 +3,7 @@ dist/
 data/
 data/README.md
 
-.env
+.env*
 poetry.lock
 
 # Log files

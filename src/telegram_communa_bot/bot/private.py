@@ -3,9 +3,9 @@ from aiogram.enums import ChatType
 from aiogram.types import Message
 from aiogram.filters import Command
 
-from .logging_setup import setup_logging
-from .common import item_str, lobby_send_message
-from .persistent import app_data, users_lists
+from ..logging_setup import setup_logging
+from .app_data import app_data, users_lists
+from .common import item_str
 from .lobby_chat import ask_allow_user
 
 logger = setup_logging(__file__)
@@ -46,4 +46,5 @@ async def handle_message(message: Message):
     if not message.from_user or message.from_user.id not in white_list:
         return await message.answer("Тебя нет в списке допущенных пользователей")
 
-    return await message.forward(app_data().chat_id)
+    ad = app_data()
+    return await message.forward(ad.chat_id)
