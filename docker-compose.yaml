@@ -1,16 +1,9 @@
-{
-  "version": "3.8",
-  "services":
-    {
-      "bot":
-        {
-          "image": "telegram-communa-bot:latest",
-          "build": { "context": ".", "dockerfile": "Dockerfile" },
-          "container_name": "telegram-communa-bot",
-          "restart": "unless-stopped",
-          "env_file": [".env"],
-          "environment": { "PYTHONUNBUFFERED": "1" },
-          "volumes": ["./data:/app/data"],
-        },
-    },
-}
+services:
+  bot:
+    image: "telegram-communa-bot:latest"
+    build: { "context": ".", "dockerfile": "Dockerfile" }
+    container_name: "telegram-communa-bot"
+    restart: "unless-stopped"
+    env_file: [".env"]
+    # environment: { "PYTHONUNBUFFERED": "1" }
+    volumes: ["./data:/app/data"]
