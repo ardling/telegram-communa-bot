@@ -4,10 +4,9 @@ Telegram bot for message forwarding between private chats and a community group.
 
 ## Features
 
-- Forward private messages (text, photo, video, animation, document) to a target group with UID markers
+- Forward private messages (text, photo, video, animation, document) to a target
+  group with UID markers
 - Forward replies from the group back to original users
-- In-memory UID mapping (resets on restart)
-- Error handling for unsupported message types
 
 ## Setup
 
@@ -15,7 +14,7 @@ Telegram bot for message forwarding between private chats and a community group.
 2. Set environment variables:
    ```bash
    export TELEGRAM_BOT_TOKEN=your_bot_token_here
-   export TARGET_GROUP_ID=your_group_chat_id_here
+   export BOT_ADMIN=TG_UID
    ```
 3. Install dependencies and run:
    ```bash
@@ -23,19 +22,25 @@ Telegram bot for message forwarding between private chats and a community group.
    telegram-communa-bot
    ```
 
+UID:GID `12090`
+
 ## Usage
 
-1. Add the bot to your target group as an admin
-2. Users send private messages to the bot
-3. Messages are forwarded to the group with `[UID:XXXXXXXX]` markers
-4. Group members can reply to bot messages to respond to original users
+1. Add the bot to your target group
+2. `/start`
+3. send UID to admin
+4. Users send private messages to the bot
+5. Messages are forwarded to the group
+6. Group members can reply to bot messages to respond to original users
 
 ## Development
 
 Run tests:
+
 ```bash
 pytest tests/
 ```
 
-Add `.env.dev`
+Add `.env`
 
+`eval $(poetry env activate)`

@@ -16,7 +16,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN useradd -m botuser
+RUN groupadd -g 12090 botuser && useradd -m botuser --uid 12090 --gid 12090
 
 ENV LANG=C.UTF-8 \
     PYTHONUNBUFFERED=1 \
