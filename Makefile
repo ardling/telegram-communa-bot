@@ -4,11 +4,13 @@ SUBREPO = library
 REPOSITORY = harbor.kube.local/$(SUBREPO)
 DOCKER_IMAGE = $(REPOSITORY)/$(PROJECT)
 REPO_FULL = $(REPOSITORY)/$(PROJECT)
+TEST_PARAMS = --set telegram_token="TG_TOKEN" --set bot_admin="admin_user"
+NAMESPACE = dev
 
 .PHONY: check
 check:
-	helm lint $(CHART_PATH)
-	helm template $(CHART_PATH)
+	helm lint $(CHART_PATH) $(TEST_PARAMS)
+	helm template $(CHART_PATH) $(TEST_PARAMS)
 
 .PHONY: build
 build: check
@@ -23,4 +25,5 @@ push: build
 
 .PHONY: dev
 dev:
-	$(shell helm upgrade lobby ./charts/lobby-bot -n dev --set telegram_token="$TELEGRAM_BOT_TOKEN" --set bot_admin="$BOT_ADMIN")
+	helm upgrade lobby ./charts/lobby-bot -n $(NAMESPACE) --set telegram_token="${TELEGRAM_BOT_TOKEN}" --set bot_admin="${BOT_ADMIN}" --set image.pullPolicy=Always
+	kubectl rollout restart deployment/lobby-lobby-bot -n $(NAMESPACE)
