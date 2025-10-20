@@ -37,6 +37,8 @@ async def user_from_id(id: int) -> User | None:
 
 
 async def lobby_send_message(text: str, reply_markup: ReplyMarkupUnion | None = None):
-    return await GlobalBot.get().send_message(
-        AppData.get().chat_id, text, reply_markup=reply_markup
-    )
+    chat_id = AppData.get().chat_id
+    if not chat_id:
+        logger.error("Lobby chat_id is not set")
+        return None
+    return await GlobalBot.get().send_message(chat_id, text, reply_markup=reply_markup)
