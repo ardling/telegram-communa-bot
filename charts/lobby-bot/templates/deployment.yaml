@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lobby-bot.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "lobby-bot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "lobby-bot.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+           - name: TELEGRAM_BOT_TOKEN
+             valueFrom:
+               secretKeyRef:
+                 name: '{{ include "lobby-bot.fullname" . }}-init'
+                 key: TELEGRAM_TOKEN
+           - name: BOT_ADMIN
+             valueFrom:
+               secretKeyRef:
+                 name: '{{ include "lobby-bot.fullname" . }}-init'
+                 key: BOT_ADMIN

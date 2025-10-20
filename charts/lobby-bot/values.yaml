@@ -1,0 +1,14 @@
+---
+telegram_token: null
+bot_admin: null
+
+podAnnotations: {}
+podLabels: {}
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: harbor.kube.local/library/lobby-bot
+  tag: latest
+  pullPolicy: IfNotPresent

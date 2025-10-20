@@ -2,6 +2,7 @@ __pycache__/
 dist/
 data/
 data/README.md
+charts/example/
 
 .env*
 poetry.lock
